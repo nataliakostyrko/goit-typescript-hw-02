@@ -4,7 +4,13 @@ import css from "./ImageModal.module.css";
 
 Modal.setAppElement("#root");
 
-const ImageModal = ({ CloseModal, isOpen, modalData }) => {
+type Props = {
+  CloseModal: () => void;
+  isOpen: boolean;
+  modalData: string | null;
+};
+
+const ImageModal = ({ CloseModal, isOpen, modalData }: Props) => {
   const customStyles = {
     content: {
       top: "50%",
@@ -37,7 +43,7 @@ const ImageModal = ({ CloseModal, isOpen, modalData }) => {
       <button className={css.closeModalBtn} onClick={CloseModal}>
         <IoClose size={15} />
       </button>
-      <img src={modalData} />
+       {modalData && <img src={modalData} alt="Modal content" />}
     </Modal>
   );
 };
