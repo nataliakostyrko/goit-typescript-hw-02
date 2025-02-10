@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import "./App.css";
+import css from "./App.module.css";
 import SearchBar from "./SearchBar/SearchBar";
 import fetchImages from "../services/api";
 import ErrorMessage  from "./ErrorMessage/ErrorMessage";
@@ -8,15 +8,36 @@ import LoadMoreBtn from "./LoadMoreBtn/LoadMoreBtn";
 import ImageGallery from "./ImageGallery/ImageGallery";
 import ImageModal from "./ImageModal/ImageModal";
 
+type ImageData = {
+  id: number;
+  urls: {
+    small: string;
+    regular: string;
+  };
+  description: string;
+};
 
-function App() {
-    const [query, setQuery] = useState("");
-    const [images, setImages] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(false);
-    const [page, setPage] = useState(1);
-    const [total, setTotal] = useState(0);
-    const [modal, setModal] = useState(false);
+type ModalState = {
+  isOpen: boolean;
+  modalData: string | null;
+};
+
+type DataResponse = {
+  results: ImageData[];
+  total_pages: number;
+};
+
+export default function App() {
+    const [query, setQuery] = useState<string>("");
+    const [images, setImages] = useState<ImageData[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<boolean>(false);
+    const [page, setPage] = useState<number>(1);
+    const [total, setTotal] = useState<number>(0);
+    const [modal, setModal] = useState<ModalState>({
+        isOpen: false,
+        modalData: null,
+    });
     
 
 
@@ -28,14 +49,14 @@ function App() {
                 setLoading(true);
                 setError(false);
                 
-                const response = await fetchImages(query, page);
+                const response:DataResponse = await fetchImages(query, page);
                 setImages((prev) =>
                     page === 1 ? response.results : [...prev, ...response.results]
                 );
                 setTotal(response.total_pages);
             
 
-            } catch (error) {
+            } catch {
                 setError(true);
             } finally {
                 setLoading(false);
@@ -45,17 +66,17 @@ function App() {
        
     }, [query, page]);
     
-    const handleSubmit = (query) => {
+    const handleSubmit = (query: string): void => {
         setQuery(query);
         setImages([]);
         setPage(1);
   };
 
-    function OpenModal(image) {
-    setModal({ isOpen: true, modalData: image });
+    const OpenModal = (url:string): void => {
+    setModal({ isOpen: true, modalData: url });
   }
 
-  function CloseModal() {
+   const CloseModal = (): void => {
     setModal({ isOpen: false, modalData: null });
   }
 
@@ -63,26 +84,21 @@ function App() {
 
 
     return (
-           <div>
-            <SearchBar onSubmit={handleSubmit} />
+           <div className={css.container}>
+            <SearchBar setQuery={handleSubmit} />
             {loading && <Loader />}
             {error && <ErrorMessage />}
              <ImageGallery images={images} OpenModal={OpenModal} />
             {total > page && (
-            <LoadMoreBtn onClick={() => setPage((prev) => prev + 1)} />
-      )}
-            <Toaster
-                position="top-right" />
+                <LoadMoreBtn onClick={() => setPage((prev) => prev + 1)} />
+            )}
               <ImageModal
                 CloseModal={CloseModal}
                 modalData={modal.modalData}
                 isOpen={modal.isOpen}
       />
-            
-            
-</div>
+     </div>
     );
 };
 
 
-export default App;
